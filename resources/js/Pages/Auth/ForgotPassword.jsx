@@ -2,23 +2,45 @@ import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import axios from 'axios';
 
-export default function ForgotPassword({ status }) {
-    const { data, setData, post, processing, errors } = useForm({
+export default function ForgotPassword({ status: initialStatus = null }) {
+    const [data, setData] = useState({
         email: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
+    const [errors, setErrors] = useState({});
+    const [processing, setProcessing] = useState(false);
+    const [status, setStatus] = useState(initialStatus);
 
-        post(route('password.email'));
+    const submit = async (e) => {
+        e.preventDefault();
+        setProcessing(true);
+        setErrors({});
+        setStatus(null);
+
+        try {
+            await axios.get('/sanctum/csrf-cookie');
+
+            const response = await axios.post('/forgot-password', {
+                email: data.email,
+            });
+
+            setStatus(response.data.status || 'Password reset link sent!');
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            } else {
+                setErrors({ email: ['Failed to send reset link'] });
+            }
+        } finally {
+            setProcessing(false);
+        }
     };
 
     return (
         <GuestLayout>
-            <Head title="Forgot Password" />
-
             <div className="mb-4 text-sm text-gray-600">
                 Forgot your password? No problem. Just let us know your email
                 address and we will email you a password reset link that will
@@ -39,7 +61,7 @@ export default function ForgotPassword({ status }) {
                     value={data.email}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
+                    onChange={(e) => setData({ ...data, email: e.target.value })}
                 />
 
                 <InputError message={errors.email} className="mt-2" />

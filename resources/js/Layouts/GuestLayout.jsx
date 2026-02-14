@@ -1,5 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
+import { Link } from 'react-router-dom';
 import { GiAbstract010 } from "react-icons/gi";
 import { useState, useEffect } from 'react';
 

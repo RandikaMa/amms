@@ -3,25 +3,47 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function ConfirmPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const [data, setData] = useState({
         password: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
+    const [errors, setErrors] = useState({});
+    const [processing, setProcessing] = useState(false);
+    const navigate = useNavigate();
 
-        post(route('password.confirm'), {
-            onFinish: () => reset('password'),
-        });
+    const submit = async (e) => {
+        e.preventDefault();
+        setProcessing(true);
+        setErrors({});
+
+        try {
+            await axios.get('/sanctum/csrf-cookie');
+
+            const response = await axios.post('/user/confirm-password', {
+                password: data.password,
+            });
+
+            // Navigate back or to intended page
+            navigate(-1);
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            } else {
+                setErrors({ password: ['Password confirmation failed'] });
+            }
+        } finally {
+            setProcessing(false);
+            setData({ password: '' });
+        }
     };
 
     return (
         <GuestLayout>
-            <Head title="Confirm Password" />
-
             <div className="mb-4 text-sm text-gray-600">
                 This is a secure area of the application. Please confirm your
                 password before continuing.
@@ -38,7 +60,7 @@ export default function ConfirmPassword() {
                         value={data.password}
                         className="mt-1 block w-full"
                         isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
+                        onChange={(e) => setData({ ...data, password: e.target.value })}
                     />
 
                     <InputError message={errors.password} className="mt-2" />

@@ -1,20 +1,42 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-export default function VerifyEmail({ status }) {
-    const { post, processing } = useForm({});
+export default function VerifyEmail({ status: initialStatus = null }) {
+    const [processing, setProcessing] = useState(false);
+    const [status, setStatus] = useState(initialStatus);
+    const navigate = useNavigate();
 
-    const submit = (e) => {
+    const submit = async (e) => {
+        e.preventDefault();
+        setProcessing(true);
+
+        try {
+            await axios.get('/sanctum/csrf-cookie');
+            const response = await axios.post('/email/verification-notification');
+            setStatus('verification-link-sent');
+        } catch (error) {
+            console.error('Failed to send verification email', error);
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleLogout = async (e) => {
         e.preventDefault();
 
-        post(route('verification.send'));
+        try {
+            await axios.post('/logout');
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed', error);
+        }
     };
 
     return (
         <GuestLayout>
-            <Head title="Email Verification" />
-
             <div className="mb-4 text-sm text-gray-600">
                 Thanks for signing up! Before getting started, could you verify
                 your email address by clicking on the link we just emailed to
@@ -35,14 +57,12 @@ export default function VerifyEmail({ status }) {
                         Resend Verification Email
                     </PrimaryButton>
 
-                    <Link
-                        href={route('logout')}
-                        method="post"
-                        as="button"
+                    <button
+                        onClick={handleLogout}
                         className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         Log Out
-                    </Link>
+                    </button>
                 </div>
             </form>
         </GuestLayout>

@@ -1,6 +1,8 @@
 import { Transition } from '@headlessui/react';
-import { Link } from '@inertiajs/react';
+import { Link } from 'react-router-dom';
 import { createContext, useContext, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const DropDownContext = createContext();
 
@@ -86,7 +88,36 @@ const Content = ({
     );
 };
 
-const DropdownLink = ({ className = '', children, ...props }) => {
+const DropdownLink = ({ className = '', children, method, ...props }) => {
+    const navigate = useNavigate();
+
+    const handleClick = async (e) => {
+        if (method === 'post') {
+            e.preventDefault();
+
+            try {
+                await axios.post(props.to || props.href);
+                navigate('/');
+            } catch (error) {
+                console.error('Action failed', error);
+            }
+        }
+    };
+
+    if (method === 'post') {
+        return (
+            <button
+                onClick={handleClick}
+                className={
+                    'block w-full text-left px-4 py-2 text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ' +
+                    className
+                }
+            >
+                {children}
+            </button>
+        );
+    }
+
     return (
         <Link
             {...props}

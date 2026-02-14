@@ -2,14 +2,30 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const [user, setUser] = useState({ name: 'User', email: 'user@example.com' });
+    const location = useLocation();
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    // Fetch user data
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await axios.get('/api/user');
+                setUser(response.data);
+            } catch (error) {
+                console.error('Failed to fetch user', error);
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -18,15 +34,15 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/">
+                                <Link to="/dashboard">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                    to="/dashboard"
+                                    active={location.pathname === '/dashboard'}
                                 >
                                     Dashboard
                                 </NavLink>
@@ -62,14 +78,13 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link
-                                            href={route('profile.edit')}
+                                            to="/profile"
                                         >
                                             Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
-                                            href={route('logout')}
+                                            to="/logout"
                                             method="post"
-                                            as="button"
                                         >
                                             Log Out
                                         </Dropdown.Link>
@@ -129,8 +144,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
+                            to="/dashboard"
+                            active={location.pathname === '/dashboard'}
                         >
                             Dashboard
                         </ResponsiveNavLink>
@@ -147,13 +162,12 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
+                            <ResponsiveNavLink to="/profile">
                                 Profile
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
+                                to="/logout"
                                 method="post"
-                                href={route('logout')}
-                                as="button"
                             >
                                 Log Out
                             </ResponsiveNavLink>

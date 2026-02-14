@@ -3,28 +3,62 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-export default function ResetPassword({ token, email }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        token: token,
-        email: email,
+export default function ResetPassword() {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+
+    const [data, setData] = useState({
+        token: '',
+        email: '',
         password: '',
         password_confirmation: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
+    const [errors, setErrors] = useState({});
+    const [processing, setProcessing] = useState(false);
 
-        post(route('password.store'), {
-            onFinish: () => reset('password', 'password_confirmation'),
+    useEffect(() => {
+        setData({
+            ...data,
+            token: searchParams.get('token') || '',
+            email: searchParams.get('email') || '',
         });
+    }, [searchParams]);
+
+    const submit = async (e) => {
+        e.preventDefault();
+        setProcessing(true);
+        setErrors({});
+
+        try {
+            await axios.get('/sanctum/csrf-cookie');
+
+            const response = await axios.post('/reset-password', {
+                token: data.token,
+                email: data.email,
+                password: data.password,
+                password_confirmation: data.password_confirmation,
+            });
+
+            navigate('/');
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            } else {
+                setErrors({ email: ['Password reset failed'] });
+            }
+        } finally {
+            setProcessing(false);
+            setData({ ...data, password: '', password_confirmation: '' });
+        }
     };
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
-
             <form onSubmit={submit}>
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
@@ -36,7 +70,7 @@ export default function ResetPassword({ token, email }) {
                         value={data.email}
                         className="mt-1 block w-full"
                         autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
+                        onChange={(e) => setData({ ...data, email: e.target.value })}
                     />
 
                     <InputError message={errors.email} className="mt-2" />
@@ -53,7 +87,7 @@ export default function ResetPassword({ token, email }) {
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                         isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
+                        onChange={(e) => setData({ ...data, password: e.target.value })}
                     />
 
                     <InputError message={errors.password} className="mt-2" />
@@ -73,7 +107,7 @@ export default function ResetPassword({ token, email }) {
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                         onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
+                            setData({ ...data, password_confirmation: e.target.value })
                         }
                     />
 
