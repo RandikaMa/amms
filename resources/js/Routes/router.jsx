@@ -11,35 +11,65 @@ import ResetPassword from "../Pages/Auth/ResetPassword";
 import VerifyEmail from "../Pages/Auth/VerifyEmail";
 import ConfirmPassword from "../Pages/Auth/ConfirmPassword";
 import Dashboard from "../Pages/Dashboard";
+import ProtectedRoute from "../Components/ProtectedRoute";
+import GuestRoute from "../Components/GuestRoute";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Login />,
+        element: (
+            <GuestRoute>
+                <Login />
+            </GuestRoute>
+        ),
     },
     {
         path: "/register",
-        element: <Register />,
+        element: (
+            <GuestRoute>
+                <Register />
+            </GuestRoute>
+        ),
     },
     {
         path: "/forgot-password",
-        element: <ForgotPassword />,
+        element: (
+            <GuestRoute>
+                <ForgotPassword />
+            </GuestRoute>
+        ),
     },
     {
         path: "/reset-password",
-        element: <ResetPassword />,
+        element: (
+            <GuestRoute>
+                <ResetPassword />
+            </GuestRoute>
+        ),
     },
     {
         path: "/verify-email",
-        element: <VerifyEmail />,
+        element: (
+            <ProtectedRoute>
+                <VerifyEmail />
+            </ProtectedRoute>
+        ),
     },
     {
         path: "/confirm-password",
-        element: <ConfirmPassword />,
+        element: (
+            <ProtectedRoute>
+                <ConfirmPassword />
+            </ProtectedRoute>
+        ),
     },
     {
         path: "/dashboard",
-        element: <Dashboard />,
+        element: (
+            <ProtectedRoute>
+                <Dashboard />
+            </ProtectedRoute>
+        ),
     },
 ]);
 

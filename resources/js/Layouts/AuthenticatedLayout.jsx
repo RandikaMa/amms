@@ -2,30 +2,27 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Toaster } from 'react-hot-toast';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const [user, setUser] = useState({ name: 'User', email: 'user@example.com' });
+    const { user, logout } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
-    // Fetch user data
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const response = await axios.get('/api/user');
-                setUser(response.data);
-            } catch (error) {
-                console.error('Failed to fetch user', error);
-            }
-        };
-
-        fetchUser();
-    }, []);
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed', error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -58,7 +55,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 type="button"
                                                 className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {user.name}
+                                                {user?.name || 'User'}
 
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
@@ -82,12 +79,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                         >
                                             Profile
                                         </Dropdown.Link>
-                                        <Dropdown.Link
-                                            to="/logout"
-                                            method="post"
+                                        <button
+                                            onClick={handleLogout}
+                                            className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
                                         >
                                             Log Out
-                                        </Dropdown.Link>
+                                        </button>
                                     </Dropdown.Content>
                                 </Dropdown>
                             </div>
@@ -154,10 +151,10 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="px-4">
                             <div className="text-base font-medium text-gray-800">
-                                {user.name}
+                                {user?.name || 'User'}
                             </div>
                             <div className="text-sm font-medium text-gray-500">
-                                {user.email}
+                                {user?.email || ''}
                             </div>
                         </div>
 
@@ -165,12 +162,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ResponsiveNavLink to="/profile">
                                 Profile
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                to="/logout"
-                                method="post"
+                            <button
+                                onClick={handleLogout}
+                                className="block w-full ps-3 pe-4 py-2 text-start text-base font-medium text-gray-600 transition duration-150 ease-in-out hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800 focus:border-gray-300 focus:bg-gray-50 focus:text-gray-800 focus:outline-none"
                             >
                                 Log Out
-                            </ResponsiveNavLink>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -185,6 +182,7 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
 
             <main>{children}</main>
+            <Toaster position="top-right" />
         </div>
     );
 }

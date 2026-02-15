@@ -5,6 +5,7 @@ import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 
 export default function Register() {
@@ -18,6 +19,7 @@ export default function Register() {
     const [errors, setErrors] = useState({});
     const [processing, setProcessing] = useState(false);
     const navigate = useNavigate();
+    const { checkAuth } = useAuth();
 
     const submit = async (e) => {
         e.preventDefault();
@@ -34,6 +36,8 @@ export default function Register() {
                 password_confirmation: data.password_confirmation,
             });
 
+            // Refresh auth state after registration
+            await checkAuth();
             navigate('/dashboard');
         } catch (error) {
             if (error.response?.data?.errors) {

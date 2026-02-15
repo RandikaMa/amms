@@ -2,6 +2,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from 'react-router-dom';
 import { GiAbstract010 } from "react-icons/gi";
 import { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 export default function GuestLayout({ children }) {
     const [isInteracting, setIsInteracting] = useState(false);
@@ -39,7 +40,7 @@ export default function GuestLayout({ children }) {
     return (
         <div className="flex min-h-screen flex-col items-center bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 pt-8 px-4 sm:justify-center sm:pt-0 overflow-hidden relative">
             {/* Background overlay for image */}
-            <div className="absolute inset-0 bg-[url('/storage/images/AMMS.jpg')] bg-cover bg-center bg-no-repeat opacity-30"></div>
+            <div className="absolute inset-0 bg-[url('/storage/images/amms-2.png')] bg-cover bg-center bg-no-repeat opacity-30"></div>
 
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden">
@@ -93,6 +94,7 @@ export default function GuestLayout({ children }) {
                     </div>
                 </div>
             </div>
+            <Toaster position="top-right"/>
         </div>
     );
 }

@@ -1,6 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Dashboard() {
+
+    toast.success("Welcome to the Dashboard!");
+
     return (
         <AuthenticatedLayout
             header={

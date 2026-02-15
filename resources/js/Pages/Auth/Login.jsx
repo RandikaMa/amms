@@ -7,7 +7,8 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Link, useNavigate } from 'react-router-dom';
 import { HiMail, HiLockClosed, HiEye, HiEyeOff } from 'react-icons/hi';
 import { useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '@/contexts/AuthContext';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Login({ status = null, canResetPassword = true }) {
     const [data, setData] = useState({
@@ -20,6 +21,7 @@ export default function Login({ status = null, canResetPassword = true }) {
     const [processing, setProcessing] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const submit = async (e) => {
         e.preventDefault();
@@ -27,26 +29,24 @@ export default function Login({ status = null, canResetPassword = true }) {
         setErrors({});
 
         try {
-            // Get CSRF token first
-            await axios.get('/sanctum/csrf-cookie');
-            
-            // Then login
-            const response = await axios.post('/login', {
+            await login({
                 email: data.email,
                 password: data.password,
                 remember: data.remember,
             });
 
             // If successful, redirect to dashboard
-            if (response.status === 200 || response.status === 204) {
-                navigate('/dashboard');
-            }
+            navigate('/dashboard');
         } catch (error) {
             if (error.response?.data?.errors) {
+                const errorMessages = Object.values(error.response.data.errors).flat().join(', ');
+                toast.error(errorMessages);
                 setErrors(error.response.data.errors);
             } else if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
                 setErrors({ email: [error.response.data.message] });
             } else {
+                toast.error("Invalid credentials");
                 setErrors({ email: ['Invalid credentials'] });
             }
         } finally {
